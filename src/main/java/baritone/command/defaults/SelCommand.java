@@ -236,6 +236,17 @@ public class SelCommand extends Command {
                 }
             }
             logDirect(String.format("Transformed %d selections", selections.length));
+        } else if (action == Action.ILLUMINATE) {
+            args.requireMax(1);
+            int minLight;
+            try{
+                minLight = args.hasAny() ? Math.min(Math.max(1,Integer.parseInt(args.getString())),15) : 1;
+            } catch (NumberFormatException e) {
+                logDirect("Entered bad argument.");
+                minLight = 1;
+            }
+            logDirect(String.format("Illuminating with minimum light level of: %d",minLight));
+
         }
     }
 
@@ -309,6 +320,8 @@ public class SelCommand extends Command {
                 "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
                 "> sel copy/cp <x> <y> <z> - Copy the selected area relative to the specified or your position.",
                 "> sel paste/p <x> <y> <z> - Build the copied area relative to the specified or your position.",
+                "> sel illuminate/il - Illuminate selection with torches to light level of 1",
+                "> sel illuminate/il <#> - Illuminate selection with torches to specified light level",
                 "",
                 "> sel expand <target> <direction> <blocks> - Expand the targets.",
                 "> sel contract <target> <direction> <blocks> - Contract the targets.",
@@ -330,6 +343,7 @@ public class SelCommand extends Command {
         COPY("copy", "cp"),
         PASTE("paste", "p"),
         CONTRACT("contract", "ct"),
+        ILLUMINATE("illuminate", "il"),
         SHIFT("shift", "sh");
         private final String[] names;
 
