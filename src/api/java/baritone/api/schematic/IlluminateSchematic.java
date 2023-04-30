@@ -23,6 +23,7 @@ import baritone.api.utils.Helper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -70,17 +71,23 @@ public class IlluminateSchematic extends AbstractSchematic {
     private boolean shouldTorch(int offsetX, int offsetY, int offsetZ) {
         BetterBlockPos pos = getWorldPos(offsetX, offsetY, offsetZ);
 
-        int illumination = level.getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(pos);
-
         BlockState state = level.getBlockState(pos);
         BlockState stateDown = level.getBlockState(pos.below());
-        BlockState stateUp = level.getBlockState(pos.above());
 
-        if(isAir(state) && isAir(stateUp) && !isAir(stateDown))
-            return illumination == 0;
+        if(!isAir(state) ||
+                isAir(stateDown) ||
+                !stateDown.isValidSpawn(level, pos.below(), EntityType.CREEPER)) {
+            cache[offsetX][offsetY][offsetZ] = true;
+            return false;
+        }
 
-        cache[offsetX][offsetY][offsetZ] = true;
-        return false;
+        int illumination = level.getLightEngine().getLayerListener(LightLayer.BLOCK).getLightValue(pos);
+        if(!(illumination == 0 || illumination == 14)){ //it doesn't detect torch placements fast enough to cache a false
+            cache[offsetX][offsetY][offsetZ] = true;
+            return false;
+        }
+
+        return illumination == 0;
     }
 
     private BetterBlockPos getWorldPos(int offsetX, int offsetY, int offsetZ){
